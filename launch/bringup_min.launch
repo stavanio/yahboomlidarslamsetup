@@ -26,9 +26,9 @@
         <param name="world_frame" value="enu"/>
         <param name="orientation_stddev" value="0.05"/>
         <param name="angular_scale" value="1.05"/>
-        <remap from="/sub_imu" to="/imu/imu_raw"/>
+        <remap from="imu/data_raw" to="/imu/imu_raw"/>
         <remap from="/sub_mag" to="/mag/mag_raw"/>
-        <remap from="/pub_imu" to="/imu/imu_data"/>
+        <remap from="imu/data" to="/imu/imu_data"/>
         <remap from="/pub_mag" to="/mag/mag_field"/>
     </node>
 

@@ -28,11 +28,29 @@ Data flow:
 - valid `/odom`
 - scan filtering before Gmapping
 
+## Before mapping
+
+Three fixes must be in place or the map will be wrong even though every topic looks alive:
+
+1. `inverted: true` in `Tmini.launch` (scan mirror)
+2. `Rosmaster_Lib` 3.3.9 (IMU zeros with 2.3.3)
+3. IMU filter remaps `imu/data_raw` and `imu/data` in `bringup_min.launch`, and EKF fusing only gyro yaw rate
+
+Details and tests: `docs/07_root_causes_and_fixes.md`.
+
+## One-command launcher
+
+`scripts/start_mapping.sh` starts base, LiDAR, filter and Gmapping in order, logs each to `~/robot_logs/map_<timestamp>/`, and checks `/odom`, `/imu/imu_data`, `/scan`, `/scan_filtered` and `/map`. Run teleop in a second session. The five-terminal order below still works.
+
+## Gmapping parameters
+
+`launch/gmapping_min.launch` uses `maxUrange 6.0` and `maxRange 8.0`. The earlier 3.0 m limit threw away most returns in a normal room.
+
 ## Critical chassis fix
 
 The Yahboom driver must use:
 
-`self.car = Rosmaster(com="/dev/ttyUSB1")`
+`self.car = Rosmaster(com="/dev/yahboom_controller")`
 
 Without that fix, common symptoms were:
 

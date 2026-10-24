@@ -8,4 +8,8 @@ sudo apt install -y \
   ros-melodic-slam-gmapping \
   ros-melodic-map-server \
   ros-melodic-rviz \
-  ros-melodic-teleop-twist-keyboard
+  ros-melodic-teleop-twist-keyboard \
+  ros-melodic-amcl \
+  ros-melodic-move-base \
+  ros-melodic-global-planner \
+  ros-melodic-dwa-local-planner

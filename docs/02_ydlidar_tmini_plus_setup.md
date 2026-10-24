@@ -28,6 +28,18 @@ The working launch used settings consistent with:
 - `sample_rate = 4`
 - `isSingleChannel = false`
 
+## Scan orientation (critical)
+
+The repo copy of `launch/Tmini.launch` uses:
+
+- `reversion: true`
+- `inverted: true`
+- static transform `base_footprint -> laser_frame`: `0 0 0.2 3.14159 0 0`
+
+With `inverted: false` the scan is mirrored left to right relative to the robot. Mapping then lays walls down at several angles and navigation turns the wrong way. Verify with the front-left object test in `docs/07_root_causes_and_fixes.md`, section 1: an object at the robot's front left must read a positive angle.
+
+The scan plane sits about 15 to 20 cm above the floor. Objects shorter than that (shoes, cables) are invisible to it.
+
 ## Device mapping
 
 In the validated setup, controller and LiDAR appeared as separate serial devices.

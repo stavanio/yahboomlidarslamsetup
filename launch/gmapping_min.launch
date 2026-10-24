@@ -1,24 +1,21 @@
 <launch>
   <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
     <remap from="scan" to="/scan_filtered"/>
-
     <param name="base_frame" value="base_footprint"/>
     <param name="odom_frame" value="odom"/>
-
-    <param name="map_update_interval" value="2.0"/>
-    <param name="maxUrange" value="8.0"/>
-    <param name="maxRange" value="10.0"/>
-
-    <param name="linearUpdate" value="0.20"/>
-    <param name="angularUpdate" value="0.10"/>
-    <param name="temporalUpdate" value="1.0"/>
-
-    <param name="particles" value="30"/>
-
-    <param name="xmin" value="-10.0"/>
-    <param name="ymin" value="-10.0"/>
-    <param name="xmax" value="10.0"/>
-    <param name="ymax" value="10.0"/>
+    <param name="map_update_interval" value="1.0"/>
+    <param name="maxUrange" value="6.0"/>
+    <param name="maxRange" value="8.0"/>
+    <param name="linearUpdate" value="0.10"/>
+    <param name="angularUpdate" value="0.05"/>
+    <param name="temporalUpdate" value="0.5"/>
+    <param name="particles" value="80"/>
+    <param name="xmin" value="-2.5"/>
+    <param name="ymin" value="-2.5"/>
+    <param name="xmax" value="2.5"/>
+    <param name="ymax" value="2.5"/>
     <param name="delta" value="0.05"/>
+    <param name="ogain" value="3.0"/>
+    <param name="minimumScore" value="50"/>
   </node>
 </launch>

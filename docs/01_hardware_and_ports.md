@@ -20,10 +20,20 @@ The important point is that the Yahboom chassis controller and LiDAR did not end
 
 ## Critical working mapping
 
-For the successful setup documented in this repo:
+Use the udev aliases in `udev/`, not raw `ttyUSB` numbers:
 
-- Yahboom chassis controller path used by the driver: `/dev/ttyUSB1`
-- LiDAR was launched through the YDLIDAR driver path and expected to publish `/scan`
+- Yahboom expansion board (CH340, USB id `7523`): `/dev/yahboom_controller`
+- YDLIDAR Tmini Plus (CP2102, USB id `10c4:ea60`): `/dev/ydlidar`
+
+The March version of this setup used `/dev/ttyUSB1` for the board. That only worked while enumeration order held.
+
+## Python library
+
+The driver needs `Rosmaster_Lib` 3.3.9 for board firmware 3.6. An older 2.3.3 egg in `/usr/local/lib/python3.6/dist-packages/` will load first if present and return all-zero IMU data. Check:
+
+`python3 -c "import Rosmaster_Lib; print(Rosmaster_Lib.__file__)"`
+
+Install steps are in `docs/07_root_causes_and_fixes.md`, section 2.
 
 ## Why this matters
 

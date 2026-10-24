@@ -2,45 +2,56 @@
 
 ## Why this patch is needed
 
-On this setup, the Yahboom chassis controller did not work correctly when the Python driver used the default serial port.
+With the default serial port the Yahboom chassis driver did not reach the expansion board. Symptoms:
 
-Symptoms of the wrong port included:
+- `/voltage` stayed 0.0
+- `/vel_raw` stayed zero
+- robot would not move from ROS
+- `/odom` was useless
 
-- /voltage stayed 0.0
-- /vel_raw stayed zero
-- robot would not move correctly from ROS
-- /odom did not become useful
+## Current fix: stable udev alias
 
-The fix was to force the Yahboom driver to use:
+Hardcoding `/dev/ttyUSB1` breaks whenever USB enumeration order changes. The driver now opens a udev alias:
 
-self.car = Rosmaster(com="/dev/ttyUSB1")
+```python
+self.car = Rosmaster(com="/dev/yahboom_controller")
+```
+
+The alias comes from `udev/99-robot-usb.rules`:
+
+```
+SUBSYSTEM=="tty", ATTRS{idProduct}=="7523", SYMLINK+="yahboom_controller"
+SUBSYSTEM=="tty", ATTRS{idProduct}=="ea60", SYMLINK+="ydlidar"
+```
+
+`7523` is the CH340 on the expansion board. `ea60` is the CP2102 on the Tmini Plus.
+
+Install:
+
+```bash
+sudo cp udev/99-robot-usb.rules udev/99-ydlidar.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules && sudo udevadm trigger
+ls -l /dev/yahboom_controller /dev/ydlidar
+```
 
 ## File to patch
 
-/home/jetson/yahboomcar_auto/src/yahboomcar_bringup/scripts/Mcnamu_driver.py
+`/home/jetson/yahboomcar_auto/src/yahboomcar_bringup/scripts/Mcnamu_driver.py`
 
-## What to change
+Find `self.car = Rosmaster()` and change it to `self.car = Rosmaster(com="/dev/yahboom_controller")`.
 
-Find:
+Verify:
 
-self.car = Rosmaster()
-
-Change to:
-
-self.car = Rosmaster(com="/dev/ttyUSB1")
-
-## How to verify the patch
-
-On the Jetson run:
-
+```bash
 grep -n "self.car = Rosmaster" /home/jetson/yahboomcar_auto/src/yahboomcar_bringup/scripts/Mcnamu_driver.py
+```
 
-Expected result:
+The driver also calls `self.car.set_car_type(10)`.
 
-self.car = Rosmaster(com="/dev/ttyUSB1")
+## Earlier version
 
-## Important note
+The March version of this repo used `Rosmaster(com="/dev/ttyUSB1")`. That worked only while the board enumerated as `ttyUSB1`.
 
-This port mapping was correct for the validated working setup in this repo.
+## Library version
 
-If your hardware enumerates differently, verify which /dev/ttyUSB* device actually corresponds to the Yahboom chassis controller before changing this line blindly.
+The driver also needs `Rosmaster_Lib` 3.3.9 with board firmware 3.6. Version 2.3.3 talks to the board but returns zeros for the IMU. See `docs/07_root_causes_and_fixes.md`, section 2.

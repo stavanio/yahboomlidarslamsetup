@@ -32,7 +32,7 @@ Wrong Yahboom driver serial port.
 
 Patch:
 
-`self.car = Rosmaster(com="/dev/ttyUSB1")`
+`self.car = Rosmaster(com="/dev/yahboom_controller")`
 
 See:
 
@@ -273,3 +273,93 @@ Before mapping, confirm all of these:
 - `/odom` updates
 - `/slam_gmapping` is running
 - map save creates `.pgm` and `.yaml`
+---
+
+## Map shows walls repeated at different angles
+
+### Likely cause
+
+LiDAR scan mirrored relative to the robot.
+
+### Check
+
+Front-left object test in `docs/07_root_causes_and_fixes.md`, section 1. A front-left object must read a positive angle.
+
+### Fix
+
+`inverted: true` in `Tmini.launch`, then rebuild the map.
+
+---
+
+## IMU filter says `Still waiting for data on topic /imu/data_raw`
+
+### Checks
+
+`rostopic hz /imu/imu_raw`
+
+`rostopic echo -n1 /imu/imu_raw/linear_acceleration`
+
+### Likely causes
+
+- IMU filter remaps use `/sub_imu` and `/pub_imu`, which the node ignores. Use `imu/data_raw` and `imu/data`.
+- `/imu/imu_raw` publishes but every value is 0.0: `Rosmaster_Lib` 2.3.3 is loaded. Install 3.3.9.
+
+---
+
+## `Unable to contact my own server at [http://OLD_IP:...]`
+
+### Cause
+
+`ROS_MASTER_URI` and `ROS_IP` in `~/.bashrc` still point at the address from a previous network.
+
+### Fix
+
+Update both lines in `~/.bashrc`, then `source ~/.bashrc` in every open session. Sessions opened before the edit keep the old values.
+
+---
+
+## Navigation goal aborts with `robot appears to be oscillating`
+
+### Cause
+
+`oscillation_timeout` shorter than a slow in-place turn. At 0.3 rad/s a 90 deg turn takes about 5 s and moves 0 m.
+
+### Fix
+
+`oscillation_timeout 20.0` in `move_base_min.launch`.
+
+---
+
+## Robot sits facing the wrong way until the goal times out
+
+### Cause
+
+With strafing off, DWA cannot see a benefit from turning when `sim_time` and `forward_point_distance` are small.
+
+### Fix
+
+`sim_time 2.5`, `forward_point_distance 0.3` in `dwa_local_planner.yaml`.
+
+---
+
+## Robot reports goal reached but stops short
+
+### Cause
+
+`xy_goal_tolerance` with `latch_xy_goal_tolerance: true`. The robot stops at the first point inside the circle, which is always on the approach side.
+
+### Fix
+
+`xy_goal_tolerance 0.04`. Going much lower makes the robot creep near the goal.
+
+---
+
+## Robot crabs sideways and skids on hard floors
+
+### Cause
+
+Mecanum strafing slips on glossy floors.
+
+### Fix
+
+`holonomic_robot: false`, `max_vel_y 0`, `min_vel_y 0`, `vy_samples 1`. Keep `min_vel_x -0.05` so the robot can back onto a goal instead of spinning 180 deg at the end.
